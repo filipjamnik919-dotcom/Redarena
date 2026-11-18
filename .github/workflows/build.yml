@@ -13,13 +13,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install system dependencies
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android tools
         run: |
-          sudo apt update
-          sudo apt install -y git zip unzip openjdk-17-jdk python3-pip python3-venv autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev cmake
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          yes | sdkmanager --licenses
+          echo "$ANDROID_HOME/build-tools/35.0.0" >> $GITHUB_PATH
+          echo "ANDROIDSDK=$ANDROID_HOME" >> $GITHUB_ENV
 
       - name: Install Buildozer
         run: |
+          sudo apt update
+          sudo apt install -y git zip unzip python3-pip python3-venv \
+            autoconf libtool pkg-config zlib1g-dev cmake
           python3 -m venv .venv
           . .venv/bin/activate
           pip install --upgrade pip setuptools wheel
@@ -35,4 +49,3 @@ jobs:
         with:
           name: RED-ARENA-APK
           path: bin/*.apk
-
